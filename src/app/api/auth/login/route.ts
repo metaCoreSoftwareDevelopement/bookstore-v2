@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { cookies } from 'next/headers';
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -16,13 +17,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
   }
 
-  const response = NextResponse.json({ success: true, username: data.username });
-  response.cookies.set('auth_user', data.username, {
+  cookies().set('auth_user', data.username, {
     httpOnly: true,
     maxAge: 60 * 60 * 2, // 2 hours
     path: '/',
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
   });
 
-  return response;
+  return NextResponse.json({ success: true, username: data.username });
 }

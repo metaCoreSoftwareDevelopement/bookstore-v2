@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 
-export async function GET() {
-  const response = NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'));
-  response.cookies.delete('auth_user');
-  return response;
+export async function GET(request: NextRequest) {
+  cookies().delete('auth_user');
+  return NextResponse.redirect(new URL('/', request.url));
 }
