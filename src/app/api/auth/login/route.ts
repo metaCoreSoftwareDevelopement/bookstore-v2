@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const { username, password } = body;
@@ -14,6 +16,12 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (error || !data) {
+    // PGRST116 means zero rows found, which meant wrong credentials.
+    // Any other error means a database/connection problem (e.g., missing env variables).
+    if (error && error.code !== 'PGRST116') {
+      console.error('Supabase error:', error);
+      return NextResponse.json({ error: `Server error: ${error.message}` }, { status: 500 });
+    }
     return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
   }
 
