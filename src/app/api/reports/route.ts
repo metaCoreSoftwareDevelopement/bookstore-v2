@@ -32,11 +32,11 @@ export async function GET(request: NextRequest) {
     const rids = Array.from(new Set(invoices.map(i => i.rid)));
     const { data: students } = await supabase
       .from('student')
-      .select('rid, name')
+      .select('rid, name, class')
       .in('rid', rids);
 
     const studentMap = (students || []).reduce((acc: any, s: any) => {
-      acc[s.rid] = s.name;
+      acc[s.rid] = { name: s.name, class: s.class };
       return acc;
     }, {});
 
@@ -68,7 +68,8 @@ export async function GET(request: NextRequest) {
             InvoiceID: item.invoice_id,
             RID: item.rid,
             Date: dStr,
-            StudentName: studentMap[item.rid] || 'Unknown',
+            StudentName: studentMap[item.rid]?.name || 'Unknown',
+            Class: studentMap[item.rid]?.class || '-',
             // Only provide Total/Paid/Due on the first row of today's installments for this bill
             // to avoid double-counting in report footers.
             Total: isFirstOfToday ? Number(bill.Total || 0) : 0,
@@ -85,7 +86,8 @@ export async function GET(request: NextRequest) {
           InvoiceID: item.invoice_id,
           RID: item.rid,
           Date: dStr,
-          StudentName: studentMap[item.rid] || 'Unknown',
+          StudentName: studentMap[item.rid]?.name || 'Unknown',
+          Class: studentMap[item.rid]?.class || '-',
           Total: Number(bill.Total || 0),
           Paid: Number(bill.Paid || 0),
           Due: Number(bill.Due || 0),

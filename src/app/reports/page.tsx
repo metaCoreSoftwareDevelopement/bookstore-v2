@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Papa from "papaparse";
 
-interface ReportRow { InvoiceID: string; RID: string; StudentName: string; Date: string; Total: number; Paid: number; Due: number; Installments: number; TodayPayment: number; }
+interface ReportRow { InvoiceID: string; RID: string; StudentName: string; Class?: string; Date: string; Total: number; Paid: number; Due: number; Installments: number; TodayPayment: number; }
 
 const fmt = (n: number) => `₹${Number(n).toLocaleString("en-IN")}`;
 
@@ -40,6 +40,7 @@ export default function ReportsPage() {
       InvoiceID: `TOTAL (${data.length} records)`,
       RID: "",
       StudentName: "",
+      Class: "",
       Date: "",
       Total: data.reduce((s, r) => s + Number(r.Total), 0),
       Paid: data.reduce((s, r) => s + Number(r.Paid), 0),
@@ -143,8 +144,8 @@ export default function ReportsPage() {
                 <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "700px" }}>
                   <thead>
                     <tr style={{ background: "#374151", color: "white", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                      {["InvoiceID", "RID", "Name", "Date", "Total", "Today", "Paid", "Due", "Inst."].map((h) => (
-                        <th key={h} style={{ padding: "0.75rem 1rem", textAlign: h === "Name" ? "left" : "center" }}>{h}</th>
+                      {["InvoiceID", "RID", "Name", "Class", "Date", "Total", "Today", "Paid", "Due", "Inst."].map((h) => (
+                        <th key={h} style={{ padding: "0.75rem 1rem", textAlign: h === "Name" || h === "Class" ? "left" : "center" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -154,6 +155,7 @@ export default function ReportsPage() {
                         <td style={{ padding: "0.75rem 1rem", fontWeight: 600 }}>{row.InvoiceID}</td>
                         <td style={{ padding: "0.75rem 1rem" }}>{row.RID}</td>
                         <td style={{ padding: "0.75rem 1rem" }}>{row.StudentName}</td>
+                        <td style={{ padding: "0.75rem 1rem" }}>{row.Class || '-'}</td>
                         <td style={{ padding: "0.75rem 1rem" }}>{row.Date}</td>
                         <td style={{ padding: "0.75rem 1rem", textAlign: "right" }}>{fmt(row.Total)}</td>
                         <td style={{ padding: "0.75rem 1rem", textAlign: "right", color: "#3b82f6", fontWeight: 700 }}>{fmt(row.TodayPayment)}</td>
@@ -166,7 +168,7 @@ export default function ReportsPage() {
                   {/* Summary footer */}
                   <tfoot>
                     <tr style={{ background: "#1e3a5f", color: "white", fontWeight: 700 }}>
-                      <td colSpan={4} style={{ padding: "0.75rem 1rem" }}>TOTAL ({data.length} records)</td>
+                      <td colSpan={5} style={{ padding: "0.75rem 1rem" }}>TOTAL ({data.length} records)</td>
                       <td style={{ padding: "0.75rem 1rem", textAlign: "right" }}>{fmt(data.reduce((s, r) => s + Number(r.Total), 0))}</td>
                       <td style={{ padding: "0.75rem 1rem", textAlign: "right", background: "#3b82f6" }}>{fmt(data.reduce((s, r) => s + Number(r.TodayPayment), 0))}</td>
                       <td style={{ padding: "0.75rem 1rem", textAlign: "right" }}>{fmt(data.reduce((s, r) => s + Number(r.Paid), 0))}</td>
