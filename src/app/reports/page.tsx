@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Papa from "papaparse";
 
 interface ReportRow { InvoiceID: string; RID: string; StudentName: string; Date: string; Total: number; Paid: number; Due: number; Installments: number; TodayPayment: number; }
 
@@ -28,6 +29,34 @@ export default function ReportsPage() {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleExportExcel = () => {
+    if (!data || data.length === 0) return;
+
+    const exportData = [...data];
+    // Add total row at the end
+    exportData.push({
+      InvoiceID: `TOTAL (${data.length} records)`,
+      RID: "",
+      StudentName: "",
+      Date: "",
+      Total: data.reduce((s, r) => s + Number(r.Total), 0),
+      Paid: data.reduce((s, r) => s + Number(r.Paid), 0),
+      Due: data.reduce((s, r) => s + Number(r.Due), 0),
+      Installments: data.reduce((s, r) => s + Number(r.Installments), 0),
+      TodayPayment: data.reduce((s, r) => s + Number(r.TodayPayment), 0),
+    });
+
+    const csv = Papa.unparse(exportData);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Daily_Report_${date}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -69,10 +98,16 @@ export default function ReportsPage() {
             {loading ? "Loading..." : "Search"}
           </button>
           {data && data.length > 0 && (
-            <button type="button" onClick={handlePrint}
-              style={{ padding: "0.65rem 1.5rem", background: "#1e3a5f", color: "white", border: "none", borderRadius: "8px", fontWeight: 700, cursor: "pointer" }}>
-              <i className="bi bi-printer" /> Print
-            </button>
+            <>
+              <button type="button" onClick={handlePrint}
+                style={{ padding: "0.65rem 1.5rem", background: "#1e3a5f", color: "white", border: "none", borderRadius: "8px", fontWeight: 700, cursor: "pointer" }}>
+                <i className="bi bi-printer" /> Print
+              </button>
+              <button type="button" onClick={handleExportExcel}
+                style={{ padding: "0.65rem 1.5rem", background: "#10b981", color: "white", border: "none", borderRadius: "8px", fontWeight: 700, cursor: "pointer" }}>
+                <i className="bi bi-file-earmark-excel" /> Export Excel
+              </button>
+            </>
           )}
         </form>
       </div>
